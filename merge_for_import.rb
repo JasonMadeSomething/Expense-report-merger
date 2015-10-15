@@ -1,7 +1,7 @@
 require 'csv'
 
 def account_500?(row)
-	return true if row["Journal Account Code"] == 500
+	return true if row["Journal Account Code"] == "500"
 end
 
 def dummy_header?(row)
@@ -12,7 +12,15 @@ end
 # track some things.
 class Record
   @@names = {}
-    
+  
+  def self.names
+	@@names
+  end
+  
+  attr_reader :last_name, :inv_dist
+  
+  attr_accessor :dist
+  
   def initialize(row)
     
     @report_name = row["Report Name"]
@@ -28,14 +36,14 @@ class Record
       @@names[@last_name] = 1
     end
     @inv_dist = @@names[@last_name]
-    # Will need to calculate due date from submit date and format it 
+    # Will need to calculate due date from submit date and format it
+	
   end
   
   def output
-    # This should return the proper data type to write the record to a csv
+    [@last_name, @report_name, @submit_date, "", @description, @account_code, @journal_amount, @job_cost, "200", @dist, @inv_dist]
   end
   
-
 end
 
 arr = []
@@ -48,24 +56,40 @@ input_files = Dir.glob("*.csv")
 input_files.sort!
 amex_file = input_files[0]
 usd_file = input_files[1]
-
 # use CSV.foreach on the amex file and use the header
-
+store = []
 CSV.foreach(amex_file, headers: true) do |row|
 	unless dummy_header?(row)
 		if account_500?(row)
-			row["Job Cost"] = prev_row["Job Cost"]
-			row["Employee Last Name"] = prev_row["Employee Last Name"]
-			row["Report Name"] = prev_row["Report Name"]
-			row["Report Submit Date"] = prev_row["Report Submit Date"]
-			row["Report Entry Expense Type Name"] = prev_row["Report Entry Expense Type Name"]
-			row["Report Entry Description"] = prev_row["Report Entry Description"]
-		end	
+			row["Job Cost"] = store[0]["Job Cost"]
+			row["Employee Last Name"] = store[0]["Employee Last Name"]
+			row["Report Name"] = store[0]["Report Name"]
+			row["Report Submit Date"] = store[0]["Report Submit Date"]
+			row["Report Entry Expense Type Name"] = store[0]["Report Entry Expense Type Name"]
+			row["Report Entry Description"] = store[0]["Report Entry Description"]			
+		end
 		arr << Record.new(row)
-		prev_row = row
+		store[0] = row
+	end
+end
+CSV.foreach(usd_file, headers: true) do |row|
+	unless dummy_header?(row) || account_500?(row)
+		arr << Record.new(row)
 	end
 end
 
+
+
+arr.each{|record| record.dist = Record.names[record.last_name]}
+
+arr.sort_by!{|record| [record.last_name, record.inv_dist]}
+
+final_headers = ["Employee Last Name", "Report Name", "Report Submit Date", "Due Date", "Description", "Journal Account Code", "Journal Amount", "Job Cost", "AP", "# Dist", "Inv Dis"]
+
+CSV.open("test.csv", "wb") do |out|
+	out << final_headers
+	arr.each{|record| out << record.output}
+end
 # create a new record using each row. 
 # Use a condition to erase the dummy header line
 # if the Journal Account Code is 500, Get the last row pushed to arr
