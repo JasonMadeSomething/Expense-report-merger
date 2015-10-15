@@ -9,8 +9,6 @@ def dummy_header?(row)
 	return true if row["Journal Amount"] == "Journal Amount"
 end
 
-# Record will need to hold the input data, as well as have class variables to
-# track some things.
 class Record
   @@names = {}
   
@@ -47,18 +45,18 @@ class Record
   
 end
 
-arr = []
+
 
 input_files = Dir.glob("*.csv")
 
-# Check that input files has only 2 files in it.
+# TODO: Check that input files has only 2 files in it.
 
-# select and open the amex file 
 input_files.sort!
 amex_file = input_files[0]
 usd_file = input_files[1]
-# use CSV.foreach on the amex file and use the header
+
 store = []
+arr = []
 CSV.foreach(amex_file, headers: true) do |row|
 	unless dummy_header?(row)
 		if account_500?(row)
@@ -79,8 +77,6 @@ CSV.foreach(usd_file, headers: true) do |row|
 	end
 end
 
-
-
 arr.each{|record| record.dist = Record.names[record.last_name]}
 
 arr.sort_by!{|record| [record.last_name, record.inv_dist]}
@@ -91,14 +87,5 @@ CSV.open("test.csv", "wb") do |out|
 	out << final_headers
 	arr.each{|record| out << record.output}
 end
-# create a new record using each row. 
-# Use a condition to erase the dummy header line
-# if the Journal Account Code is 500, Get the last row pushed to arr
-# and use the attributes to fill in the missing spots
-# Then iterate over the cash file. Get rid of dummy header and all 500 Account rows
-# at this point arr should be a 1d array of records
-# sort arr on the employee last name (any other sort things to sort by?...https://www.ruby-forum.com/topic/162413)
-# use the Record.names hash to assign  # Dist to each record
-# Iterate over arr and write each record to a csv file
-# CSV.open("file for import.csv" "wb") {|out| arr.each{|record| out << record.output}}
+
 
