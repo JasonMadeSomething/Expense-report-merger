@@ -1,4 +1,5 @@
 require 'csv'
+require 'date'
 
 def account_500?(row)
 	return true if row["Journal Account Code"] == "500"
@@ -36,12 +37,12 @@ class Record
       @@names[@last_name] = 1
     end
     @inv_dist = @@names[@last_name]
-    # Will need to calculate due date from submit date and format it
-	
+    # Will need to calculate due date from submit date and format it	
+	@due_date = Date.strptime(@submit_date, '%m/%d/%Y') + 30
   end
   
   def output
-    [@last_name, @report_name, @submit_date, "", @description, @account_code, @journal_amount, @job_cost, "200", @dist, @inv_dist]
+    [@last_name, @report_name, @submit_date, @due_date, @description, @account_code, @journal_amount, @job_cost, "200", @dist, @inv_dist]
   end
   
 end
