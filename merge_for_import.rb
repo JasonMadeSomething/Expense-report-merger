@@ -21,13 +21,13 @@ class Record
 	@account_code = row["Journal Account Code"]
 	@journal_amount = row["Journal Amount"]
 	@job_cost = row["Job Cost"]
-	
-    if @@names.include?(row["Employee Last Name"])
-      @@names[row["Employee Last Name"]] += 1
+	@last_name = row["Employee Last Name"]
+    if @@names.include?(@last_name)
+      @@names[@last_name] += 1
     else
-      @@names[row["Employee Last Name"]] = 1
+      @@names[@last_name] = 1
     end
-    @inv_dist = @@names[row["Employee Last Name"]]
+    @inv_dist = @@names[@last_name]
     # Will need to calculate due date from submit date and format it 
   end
   
