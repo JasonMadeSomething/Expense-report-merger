@@ -11,38 +11,38 @@ end
 
 class Record
   @@names = {}
-  
+
   def self.names
-	@@names
+	 @@names
   end
-  
+
   attr_reader :last_name, :inv_dist
-  
+
   attr_accessor :dist
-  
+
   def initialize(row)
-    
-    @report_name = row["Report Name"]
+
+  @report_name = row["Report Name"]
 	@submit_date = row["Report Submit Date"]
 	@description = "#{row["Report Entry Expense Type Name"]} #{row["Report Entry Description"]}"
 	@account_code = row["Journal Account Code"]
 	@journal_amount = row["Journal Amount"]
 	@job_cost = row["Job Cost"]
 	@last_name = row["Employee Last Name"]
-    if @@names.include?(@last_name)
-      @@names[@last_name] += 1
-    else
-      @@names[@last_name] = 1
-    end
-    @inv_dist = @@names[@last_name]
-    # Will need to calculate due date from submit date and format it	
+  if @@names.include?(@last_name)
+    @@names[@last_name] += 1
+  else
+    @@names[@last_name] = 1
+  end
+  @inv_dist = @@names[@last_name]
+
 	@due_date = Date.strptime(@submit_date, '%m/%d/%Y') + 30
   end
-  
+
   def output
     [@last_name, @report_name, @submit_date, @due_date, @description, @account_code, @journal_amount, @job_cost, "200", @dist, @inv_dist]
   end
-  
+
 end
 
 
@@ -60,12 +60,12 @@ arr = []
 CSV.foreach(amex_file, headers: true) do |row|
 	unless dummy_header?(row)
 		if account_500?(row)
-			row["Job Cost"] = store[0]["Job Cost"]
+			row["Job Cost"] = "MGMT CO"
 			row["Employee Last Name"] = store[0]["Employee Last Name"]
 			row["Report Name"] = store[0]["Report Name"]
 			row["Report Submit Date"] = store[0]["Report Submit Date"]
-			row["Report Entry Expense Type Name"] = store[0]["Report Entry Expense Type Name"]
-			row["Report Entry Description"] = store[0]["Report Entry Description"]			
+			row["Report Entry Expense Type Name"] = ""
+			row["Report Entry Description"] = "AMEX"
 		end
 		arr << Record.new(row)
 		store[0] = row
