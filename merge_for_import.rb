@@ -1,14 +1,17 @@
 require 'csv'
 require 'date'
 
+# Records with code 500 are ignored for the cash file
 def account_500?(row)
 	return true if row["Journal Account Code"] == "500"
 end
 
+# These indicate filler entries
 def dummy_header?(row)
 	return true if row["Journal Amount"] == "Journal Amount"
 end
 
+# General structure of a record
 class Record
   @@names = {}
 
@@ -59,6 +62,7 @@ store = []
 arr = []
 CSV.foreach(amex_file, headers: true) do |row|
 	unless dummy_header?(row)
+		# Format amex records
 		if account_500?(row)
 			row["Job Cost"] = "MGMT CO"
 			row["Employee Last Name"] = store[0]["Employee Last Name"]
